@@ -41,20 +41,62 @@ class IMAPClient:
         if not self.connected:
             self.connect()
 
-        return [
-            MailMessage(
-                message_id="demo-001",
-                subject="MailWatch test message",
-                sender="sender@example.com",
-                recipient=self.account.email,
-                received_at=datetime.now(UTC),
-                body="Hello MailWatch",
+        if not self.client:
+            return [
+                MailMessage(
+                    message_id="demo-001",
+                    subject="MailWatch test message",
+                    sender="sender@example.com",
+                    recipient=self.account.email,
+                    received_at=datetime.now(UTC),
+                    body="Hello MailWatch",
+                )
+            ]
+
+        self.client.select_folder("INBOX")
+
+        ids = self.client.search(["UNSEEN"])
+
+        messages = []
+
+        for uid in ids:
+            data = self.client.fetch(
+                uid,
+                [
+                    "RFC822",
+                    "ENVELOPE",
+                ],
             )
-        ]
+
+            envelope = data[uid][b"ENVELOPE"]
+
+            subject = (
+                envelope.subject.decode(errors="ignore")
+                if envelope.subject
+                else ""
+            )
+
+            messages.append(
+                MailMessage(
+                    message_id=str(uid),
+                    subject=subject,
+                    sender=str(envelope.from_),
+                    recipient=self.account.email,
+                    received_at=envelope.date or datetime.now(UTC),
+                    body=data[uid][b"RFC822"].decode(
+                        errors="ignore"
+                    ),
+                )
+            )
+
+        return messages
 
     def disconnect(self):
         if self.connected and self.client:
             self.client.logout()
 
         self.connected = False
-        self.logger.info("Disconnected")
+
+        self.logger.info(
+            "Disconnected"
+        )
