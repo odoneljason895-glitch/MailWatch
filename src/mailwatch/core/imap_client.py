@@ -1,33 +1,36 @@
-"""
-MailWatch IMAP client placeholder.
-"""
+from datetime import UTC, datetime
 
-from mailwatch.core.message import MailMessage
+from mailwatch.core.logger import get_logger
+from mailwatch.accounts.models import MailAccount
 
 
 class IMAPClient:
-    def __init__(self, account):
+    def __init__(self, account: MailAccount):
         self.account = account
         self.connected = False
+        self.logger = get_logger("IMAPClient")
 
     def connect(self):
         self.connected = True
-        return True
-
-    def disconnect(self):
-        self.connected = False
-        return True
+        self.logger.info(
+            f"Connected to {self.account.server}:{self.account.port}"
+        )
 
     def fetch_messages(self):
         if not self.connected:
-            return []
+            self.connect()
 
         return [
-            MailMessage.create(
-                message_id="demo-001",
-                subject="MailWatch test message",
-                sender="sender@example.com",
-                recipient=self.account.email if hasattr(self.account, "email") else "unknown",
-                body="Hello MailWatch",
-            )
+            {
+                "message_id": "demo-001",
+                "subject": "MailWatch test message",
+                "sender": "sender@example.com",
+                "recipient": self.account.email,
+                "received_at": datetime.now(UTC),
+                "body": "Hello MailWatch",
+            }
         ]
+
+    def disconnect(self):
+        self.connected = False
+        self.logger.info("Disconnected")
