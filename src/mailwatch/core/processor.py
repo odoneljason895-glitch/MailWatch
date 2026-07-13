@@ -1,27 +1,23 @@
-"""
-MailWatch message processor.
-"""
+from mailwatch.core.models import MailMessage
 
 
 class MessageProcessor:
-    def __init__(self, rule_engine=None):
-        self.rule_engine = rule_engine
+    def __init__(self, rules=None):
+        self.rules = rules
 
     def process(self, message):
-        result = {
+        if isinstance(message, dict):
+            message = MailMessage(**message)
+
+        matched = []
+
+        if self.rules:
+            matched = self.rules.check(message)
+
+        return {
             "message": message,
-            "matched_rules": [],
+            "matched_rules": matched,
         }
-
-        if self.rule_engine:
-            matches = self.rule_engine.check(message)
-
-            result["matched_rules"] = [
-                item for item in matches
-                if item is not None
-            ]
-
-        return result
 
     def process_many(self, messages):
         return [

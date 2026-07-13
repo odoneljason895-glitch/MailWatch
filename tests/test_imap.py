@@ -17,4 +17,4 @@ def test_imap_client_fetch():
     messages = client.fetch_messages()
 
     assert len(messages) == 1
-    assert messages[0]["subject"] == "MailWatch test message"
+    assert messages[0].subject == "MailWatch test message"
