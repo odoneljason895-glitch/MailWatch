@@ -15,6 +15,11 @@ class IMAPClient:
         self.logger = get_logger("IMAPClient")
 
     def connect(self):
+        if self.account.server == "imap.example.com" or not self.account.password:
+            self.connected = True
+            self.logger.info("Demo IMAP connection")
+            return
+
         self.client = Client(
             self.account.server,
             port=self.account.port,
@@ -51,8 +56,5 @@ class IMAPClient:
         if self.connected and self.client:
             self.client.logout()
 
-            self.connected = False
-
-            self.logger.info(
-                "Disconnected"
-            )
+        self.connected = False
+        self.logger.info("Disconnected")
