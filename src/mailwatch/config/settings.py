@@ -1,46 +1,16 @@
-"""
-MailWatch configuration settings.
-
-Loads environment variables and provides application configuration.
-"""
-
-import os
-from pathlib import Path
-
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
 
-# Project root directory
-BASE_DIR = Path(__file__).resolve().parents[3]
-
-# Load .env file if present
-ENV_FILE = BASE_DIR / ".env"
-load_dotenv(ENV_FILE)
-
-
-class Settings:
-    """
-    Main application settings.
-    """
-
+class Settings(BaseSettings):
     APP_NAME: str = "MailWatch"
-    VERSION: str = "0.1.0"
 
-    # Data storage
-    DATA_DIR: Path = BASE_DIR / "data"
+    mail_check_interval_seconds: int = 60
+    log_level: str = "INFO"
+    enable_notifications: bool = False
 
-    # Mail account defaults
-    MAIL_CHECK_INTERVAL_SECONDS: int = int(
-        os.getenv("MAIL_CHECK_INTERVAL_SECONDS", "60")
-    )
-
-    # Logging
-    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
-
-    # Notification settings
-    ENABLE_NOTIFICATIONS: bool = (
-        os.getenv("ENABLE_NOTIFICATIONS", "false").lower() == "true"
-    )
+    class Config:
+        env_file = ".env"
+        extra = "ignore"
 
 
 settings = Settings()
