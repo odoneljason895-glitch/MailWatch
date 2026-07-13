@@ -1,26 +1,27 @@
-"""
-MailWatch notification manager.
-"""
-
 from mailwatch.notifications.email import EmailNotifier
+from mailwatch.core.logger import get_logger
 
 
 class NotificationManager:
     def __init__(self):
-        self.notifiers = [
-            EmailNotifier()
-        ]
+        self.email = EmailNotifier()
+        self.logger = get_logger("NotificationManager")
+        self.sent = []
 
     def notify(self, recipient, subject, message):
-        results = []
+        result = self.email.send(
+            recipient,
+            subject,
+            message,
+        )
 
-        for notifier in self.notifiers:
-            results.append(
-                notifier.send(
-                    recipient,
-                    subject,
-                    message,
-                )
-            )
+        self.sent.append(result)
 
-        return results
+        self.logger.info(
+            f"Notification sent to {recipient}"
+        )
+
+        return result
+
+    def history(self):
+        return self.sent
