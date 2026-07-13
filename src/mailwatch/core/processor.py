@@ -14,6 +14,17 @@ class MessageProcessor:
         }
 
         if self.rule_engine:
-            result["matched_rules"] = self.rule_engine.check(message)
+            matches = self.rule_engine.check(message)
+
+            result["matched_rules"] = [
+                item for item in matches
+                if item is not None
+            ]
 
         return result
+
+    def process_many(self, messages):
+        return [
+            self.process(message)
+            for message in messages
+        ]

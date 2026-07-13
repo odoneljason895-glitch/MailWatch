@@ -1,34 +1,19 @@
-from mailwatch.accounts.manager import AccountManager
-from mailwatch.accounts.models import MailAccount
-from mailwatch.core.watcher import MailWatcher
-from mailwatch.core.processor import MessageProcessor
-from mailwatch.rules.engine import RuleEngine
+from mailwatch.core.app import MailWatchApp
 
 
 def main():
-    watcher = MailWatcher()
-
-    manager = AccountManager()
-    manager.add(
-        MailAccount(
-            name="Demo",
-            email="demo@example.com",
-            server="imap.example.com",
-            username="demo@example.com",
-        )
+    app = MailWatchApp(
+        "src/mailwatch/config/accounts.yml",
+        "src/mailwatch/config/rules.yml",
     )
 
-    rules = RuleEngine()
-    rules.add_rule(lambda message: "contains hello" if "hello" in message.lower() else None)
-
-    processor = MessageProcessor(rules)
-
-    watcher.start()
+    app.start()
 
     print("MailWatch started")
-    print(watcher.status())
-    print(manager.all())
-    print(processor.process("Hello MailWatch"))
+    print(app.status())
+
+    for result in app.poll():
+        print(result)
 
 
 if __name__ == "__main__":

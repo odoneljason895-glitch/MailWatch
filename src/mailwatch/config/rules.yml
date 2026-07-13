@@ -1,0 +1,4 @@
+rules:
+  - name: hello_message
+    type: contains
+    value: hello
