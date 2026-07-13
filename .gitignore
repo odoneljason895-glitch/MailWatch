@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+src/mailwatch.egg-info/
+.env
+data/*
