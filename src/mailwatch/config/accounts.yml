@@ -5,4 +5,5 @@ accounts:
     server: imap.example.com
     port: 993
     username: demo@example.com
+    password: ""
     enabled: true
