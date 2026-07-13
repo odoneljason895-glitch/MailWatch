@@ -36,5 +36,5 @@ def parse_email(raw_bytes):
         "subject": subject,
         "sender": sender,
         "recipient": recipient,
-        "body": body,
+        "body": body.strip(),
     }
