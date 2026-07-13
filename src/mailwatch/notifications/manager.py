@@ -7,11 +7,20 @@ from mailwatch.notifications.email import EmailNotifier
 
 class NotificationManager:
     def __init__(self):
-        self.email = EmailNotifier()
+        self.notifiers = [
+            EmailNotifier()
+        ]
 
     def notify(self, recipient, subject, message):
-        return self.email.send(
-            recipient,
-            subject,
-            message,
-        )
+        results = []
+
+        for notifier in self.notifiers:
+            results.append(
+                notifier.send(
+                    recipient,
+                    subject,
+                    message,
+                )
+            )
+
+        return results

@@ -8,6 +8,7 @@ from mailwatch.core.processor import MessageProcessor
 from mailwatch.core.imap_client import IMAPClient
 from mailwatch.rules.engine import RuleEngine
 from mailwatch.rules.loader import load_rules
+from mailwatch.notifications import NotificationManager
 
 
 class MailWatchApp:
@@ -27,6 +28,7 @@ class MailWatchApp:
             for account in self.accounts
         ]
 
+        self.notifications = NotificationManager()
         self.watcher = MailWatcher()
 
     def start(self):
@@ -41,7 +43,17 @@ class MailWatchApp:
         for client in self.clients:
             messages.extend(client.fetch_messages())
 
-        return self.processor.process_many(messages)
+        results = self.processor.process_many(messages)
+
+        for result in results:
+            if result["matched_rules"]:
+                self.notifications.notify(
+                    result["message"].recipient,
+                    "MailWatch Alert",
+                    str(result),
+                )
+
+        return results
 
     def status(self):
         return {
