@@ -2,7 +2,7 @@
 Mail account models for MailWatch.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC
 from pydantic import BaseModel, Field
 
 
@@ -38,5 +38,5 @@ class MailAccount(BaseModel):
     enabled: bool = True
 
     created_at: datetime = Field(
-        default_factory=datetime.utcnow
+     default_factory=lambda: datetime.now(UTC)
     )

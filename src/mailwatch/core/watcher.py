@@ -2,7 +2,7 @@
 MailWatch monitoring engine.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC
 
 
 class MailWatcher:
@@ -12,7 +12,7 @@ class MailWatcher:
 
     def start(self):
         self.running = True
-        self.started_at = datetime.utcnow()
+        self.started_at = datetime.now(UTC)
 
     def stop(self):
         self.running = False
