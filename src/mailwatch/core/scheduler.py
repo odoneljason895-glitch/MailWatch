@@ -1,14 +1,14 @@
-"""
-MailWatch scheduler.
-"""
-
 import time
+
+from mailwatch.core.logger import get_logger
+from mailwatch.config.settings import settings
 
 
 class Scheduler:
-    def __init__(self, interval_seconds=60):
-        self.interval_seconds = interval_seconds
+    def __init__(self):
         self.jobs = []
+        self.logger = get_logger("Scheduler")
+        self.running = False
 
     def add_job(self, job):
         self.jobs.append(job)
@@ -21,12 +21,14 @@ class Scheduler:
 
         return results
 
-    def run(self, cycles=1):
-        results = []
+    def start(self):
+        self.running = True
+        self.logger.info("Scheduler started")
 
-        for _ in range(cycles):
-            results.extend(self.run_once())
-            if cycles > 1:
-                time.sleep(self.interval_seconds)
+        while self.running:
+            self.run_once()
+            time.sleep(settings.mail_check_interval_seconds)
 
-        return results
+    def stop(self):
+        self.running = False
+        self.logger.info("Scheduler stopped")

@@ -6,6 +6,7 @@ from mailwatch.accounts.loader import load_accounts
 from mailwatch.core.watcher import MailWatcher
 from mailwatch.core.processor import MessageProcessor
 from mailwatch.core.imap_client import IMAPClient
+from mailwatch.core.scheduler import Scheduler
 from mailwatch.rules.engine import RuleEngine
 from mailwatch.rules.loader import load_rules
 from mailwatch.notifications import NotificationManager
@@ -29,7 +30,11 @@ class MailWatchApp:
         ]
 
         self.notifications = NotificationManager()
+
         self.watcher = MailWatcher()
+
+        self.scheduler = Scheduler()
+        self.scheduler.add_job(self.poll)
 
     def start(self):
         self.watcher.start()
@@ -60,4 +65,5 @@ class MailWatchApp:
             "watcher": self.watcher.status(),
             "accounts": self.accounts,
             "clients": len(self.clients),
+            "scheduler_jobs": len(self.scheduler.jobs),
         }
