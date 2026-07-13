@@ -4,6 +4,7 @@ from imapclient import IMAPClient as Client
 
 from mailwatch.accounts.models import MailAccount
 from mailwatch.core.logger import get_logger
+from mailwatch.core.parser import parse_email
 from mailwatch.core.models import MailMessage
 
 
@@ -15,7 +16,11 @@ class IMAPClient:
         self.logger = get_logger("IMAPClient")
 
     def connect(self):
-        if self.account.server == "imap.example.com" or not self.account.password:
+        # Keep demo mode for tests
+        if (
+            self.account.server == "imap.example.com"
+            or not getattr(self.account, "password", None)
+        ):
             self.connected = True
             self.logger.info("Demo IMAP connection")
             return
@@ -41,6 +46,7 @@ class IMAPClient:
         if not self.connected:
             self.connect()
 
+        # Demo messages used for development/tests
         if not self.client:
             return [
                 MailMessage(
@@ -55,7 +61,9 @@ class IMAPClient:
 
         self.client.select_folder("INBOX")
 
-        ids = self.client.search(["UNSEEN"])
+        ids = self.client.search(
+            ["UNSEEN"]
+        )
 
         messages = []
 
@@ -63,29 +71,30 @@ class IMAPClient:
             data = self.client.fetch(
                 uid,
                 [
-                    "RFC822",
-                    "ENVELOPE",
+                    b"RFC822",
+                    b"ENVELOPE",
                 ],
+            )
+
+            raw_email = data[uid][b"RFC822"]
+
+            parsed = parse_email(
+                raw_email
             )
 
             envelope = data[uid][b"ENVELOPE"]
 
-            subject = (
-                envelope.subject.decode(errors="ignore")
-                if envelope.subject
-                else ""
-            )
-
             messages.append(
                 MailMessage(
                     message_id=str(uid),
-                    subject=subject,
-                    sender=str(envelope.from_),
-                    recipient=self.account.email,
-                    received_at=envelope.date or datetime.now(UTC),
-                    body=data[uid][b"RFC822"].decode(
-                        errors="ignore"
+                    subject=parsed["subject"],
+                    sender=parsed["sender"],
+                    recipient=parsed["recipient"],
+                    received_at=(
+                        envelope.date
+                        or datetime.now(UTC)
                     ),
+                    body=parsed["body"],
                 )
             )
 
